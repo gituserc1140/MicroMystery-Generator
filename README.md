@@ -1,6 +1,6 @@
-# ✨ Compliment Generator
+# Micro-Mystery Generator
 
-A Streamlit app that instantly generates a short, personalised compliment using the [Mistral AI](https://mistral.ai/) API. Enter your name and optionally a little about yourself, and receive a unique, heartfelt compliment in seconds.
+A Streamlit app that generates tiny, eerie mysteries using the [Mistral AI](https://mistral.ai/) API. Each mystery contains a strange detail, a hidden clue, and a reveal — all under 40 words.
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://micromystery-generator.streamlit.app/)
 [![View on GitHub](https://img.shields.io/badge/View%20on-GitHub-181717?logo=github&style=flat-square)](https://github.com/gituserc1140/MicroMystery-Generator)
@@ -8,7 +8,7 @@ A Streamlit app that instantly generates a short, personalised compliment using 
 
 ## About
 
-Enter your name (and optionally a few sentences about yourself) and the app uses the Mistral AI language model to craft a personalised, uplifting compliment just for you. Each compliment is under 40 words and generated fresh every time you click the button.
+Click **Unveil a Mystery** and the app uses the Mistral AI language model to craft a tiny, atmospheric mystery. Each mystery is under 40 words and generated fresh every time. Reveal hints progressively, then uncover the full solution when you're ready.
 
 ## Setup
 
@@ -56,10 +56,11 @@ streamlit run app.py
 
 1. Open the app in your browser (default: `http://localhost:8501`).
 2. Enter your **Mistral API key** in the sidebar.
-3. Type your **name** in the main input field.
-4. Optionally add a sentence or two **about yourself** (interests, achievements, mood).
-5. Click **✨ Generate Compliment** and enjoy your personalised message.
-6. Click the button again to generate a fresh compliment.
+3. Click **Unveil a Mystery** to generate a new micro-mystery.
+4. Click **Reveal Hint 1** for a subtle nudge.
+5. Click **Reveal Hint 2** for a more direct clue.
+6. Click **Reveal Answer** to see the full solution and explanation.
+7. Click **Unveil a Mystery** again to start fresh with a new mystery.
 
 ## Tech stack
 

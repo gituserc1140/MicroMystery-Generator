@@ -309,11 +309,11 @@ def main():
 
         # Hint 1
         if not st.session_state.get("hint_1_shown"):
-            if st.button("🔍 Reveal Hint 1"):
+            if st.button("Reveal Hint 1"):
                 st.session_state["hint_1_shown"] = True
                 st.rerun()
         else:
-            st.markdown('<div class="hint-label">🔍 Hint 1</div>', unsafe_allow_html=True)
+            st.markdown('<div class="hint-label">Hint 1</div>', unsafe_allow_html=True)
             st.markdown(
                 f'<div class="hint-card">{html_lib.escape(st.session_state["hint_1"])}</div>',
                 unsafe_allow_html=True,
@@ -321,11 +321,11 @@ def main():
 
             # Hint 2
             if not st.session_state.get("hint_2_shown"):
-                if st.button("🔍 Reveal Hint 2"):
+                if st.button("Reveal Hint 2"):
                     st.session_state["hint_2_shown"] = True
                     st.rerun()
             else:
-                st.markdown('<div class="hint-label">🔍 Hint 2</div>', unsafe_allow_html=True)
+                st.markdown('<div class="hint-label">Hint 2</div>', unsafe_allow_html=True)
                 st.markdown(
                     f'<div class="hint-card">{html_lib.escape(st.session_state["hint_2"])}</div>',
                     unsafe_allow_html=True,
@@ -333,11 +333,11 @@ def main():
 
                 # Answer
                 if not st.session_state.get("answer_shown"):
-                    if st.button("💡 Reveal Answer"):
+                    if st.button("Reveal Answer"):
                         st.session_state["answer_shown"] = True
                         st.rerun()
                 else:
-                    st.markdown('<div class="answer-label">💡 The Answer</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="answer-label">The Answer</div>', unsafe_allow_html=True)
                     st.markdown(
                         f'<div class="answer-card">{html_lib.escape(st.session_state["answer"])}</div>',
                         unsafe_allow_html=True,
