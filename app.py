@@ -1,4 +1,5 @@
 import html as html_lib
+import json
 import os
 
 import requests
@@ -75,6 +76,48 @@ _CSS = """
     margin-top: 1rem;
 }
 
+/* ── Hint card ─────────────────────────────────────────────────── */
+.hint-card {
+    background: rgba(7,15,40,0.7);
+    border: 1px solid rgba(56,100,220,0.5);
+    border-radius: 14px;
+    padding: 1.2rem 1.8rem;
+    color: #93c5fd;
+    font-size: 1rem;
+    line-height: 1.8;
+    margin-top: 1rem;
+}
+.hint-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #3b82f6;
+    margin-bottom: 0.4rem;
+    text-align: center;
+}
+
+/* ── Answer card ───────────────────────────────────────────────── */
+.answer-card {
+    background: rgba(30,20,5,0.7);
+    border: 1px solid rgba(217,119,6,0.6);
+    border-radius: 14px;
+    padding: 1.4rem 2rem;
+    color: #fcd34d;
+    font-size: 1.05rem;
+    line-height: 1.85;
+    margin-top: 1rem;
+}
+.answer-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #d97706;
+    margin-bottom: 0.4rem;
+    text-align: center;
+}
+
 /* ── Buttons ───────────────────────────────────────────────────── */
 [data-testid="stButton"] button {
     background: linear-gradient(135deg, #4c1d95, #0e7490) !important;
@@ -127,10 +170,14 @@ _SYSTEM_PROMPT = (
     "a strange or impossible detail; "
     "one subtle clue that hints at the solution; "
     "an atmospheric tone; "
-    "no explanation, no answer, no resolution. "
+    "no explanation, no answer, no resolution in the mystery itself. "
     "The mystery should feel clever, unsettling, and self-contained. "
-    "Output only the mystery text. "
-    "No preamble, no formatting, no commentary."
+    "You must respond with a JSON object containing exactly four keys: "
+    "\"mystery\" (the mystery text, under 40 words), "
+    "\"hint_1\" (a subtle nudge that points at one detail without giving away the answer, under 25 words), "
+    "\"hint_2\" (a more direct clue that nearly reveals the solution, under 25 words), "
+    "\"answer\" (the full solution and explanation, under 60 words). "
+    "Output only the JSON object. No preamble, no formatting, no commentary."
 )
 
 
@@ -151,21 +198,38 @@ def generate_mystery(api_key: str) -> dict:
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": "Generate a new micro-mystery."},
         ],
-        "max_tokens": 120,
+        "max_tokens": 350,
         "temperature": 1.0,
+        "response_format": {"type": "json_object"},
     }
     try:
         response = requests.post(MISTRAL_API_URL, headers=headers, json=payload, timeout=30)
         if response.status_code == 200:
-            text = response.json()["choices"][0]["message"]["content"].strip()
-            return {"text": text, "has_error": False}
+            raw = response.json()["choices"][0]["message"]["content"].strip()
+            try:
+                data = json.loads(raw)
+                mystery = str(data.get("mystery", "")).strip()
+                hint_1 = str(data.get("hint_1", "")).strip()
+                hint_2 = str(data.get("hint_2", "")).strip()
+                answer = str(data.get("answer", "")).strip()
+                if not mystery:
+                    return {"has_error": True, "text": "The model returned an unexpected response. Please try again."}
+                return {
+                    "has_error": False,
+                    "mystery": mystery,
+                    "hint_1": hint_1,
+                    "hint_2": hint_2,
+                    "answer": answer,
+                }
+            except (json.JSONDecodeError, KeyError):
+                return {"has_error": True, "text": f"Could not parse model response: {raw[:200]}"}
         error_body = response.json() if response.content else {}
         message = error_body.get("message") or error_body.get("error", {}).get("message", response.text)
-        return {"text": f"API error {response.status_code}: {message}", "has_error": True}
+        return {"has_error": True, "text": f"API error {response.status_code}: {message}"}
     except requests.exceptions.Timeout:
-        return {"text": "Request timed out. Please try again.", "has_error": True}
+        return {"has_error": True, "text": "Request timed out. Please try again."}
     except Exception as exc:
-        return {"text": f"Unexpected error: {exc}", "has_error": True}
+        return {"has_error": True, "text": f"Unexpected error: {exc}"}
 
 
 def main():
@@ -224,12 +288,60 @@ def main():
                 f'<div class="error-card">{html_lib.escape(result["text"])}</div>',
                 unsafe_allow_html=True,
             )
+            for key in ("mystery", "hint_1", "hint_2", "answer", "hint_1_shown", "hint_2_shown", "answer_shown"):
+                st.session_state.pop(key, None)
         else:
-            st.markdown('<div class="mystery-label">The Mystery</div>', unsafe_allow_html=True)
+            st.session_state["mystery"] = result["mystery"]
+            st.session_state["hint_1"] = result["hint_1"]
+            st.session_state["hint_2"] = result["hint_2"]
+            st.session_state["answer"] = result["answer"]
+            st.session_state["hint_1_shown"] = False
+            st.session_state["hint_2_shown"] = False
+            st.session_state["answer_shown"] = False
+
+    # ── Progressive reveal ─────────────────────────────────────────
+    if "mystery" in st.session_state:
+        st.markdown('<div class="mystery-label">The Mystery</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="mystery-card">{html_lib.escape(st.session_state["mystery"])}</div>',
+            unsafe_allow_html=True,
+        )
+
+        # Hint 1
+        if not st.session_state.get("hint_1_shown"):
+            if st.button("🔍 Reveal Hint 1"):
+                st.session_state["hint_1_shown"] = True
+                st.rerun()
+        else:
+            st.markdown('<div class="hint-label">🔍 Hint 1</div>', unsafe_allow_html=True)
             st.markdown(
-                f'<div class="mystery-card">{html_lib.escape(result["text"])}</div>',
+                f'<div class="hint-card">{html_lib.escape(st.session_state["hint_1"])}</div>',
                 unsafe_allow_html=True,
             )
+
+            # Hint 2
+            if not st.session_state.get("hint_2_shown"):
+                if st.button("🔍 Reveal Hint 2"):
+                    st.session_state["hint_2_shown"] = True
+                    st.rerun()
+            else:
+                st.markdown('<div class="hint-label">🔍 Hint 2</div>', unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="hint-card">{html_lib.escape(st.session_state["hint_2"])}</div>',
+                    unsafe_allow_html=True,
+                )
+
+                # Answer
+                if not st.session_state.get("answer_shown"):
+                    if st.button("💡 Reveal Answer"):
+                        st.session_state["answer_shown"] = True
+                        st.rerun()
+                else:
+                    st.markdown('<div class="answer-label">💡 The Answer</div>', unsafe_allow_html=True)
+                    st.markdown(
+                        f'<div class="answer-card">{html_lib.escape(st.session_state["answer"])}</div>',
+                        unsafe_allow_html=True,
+                    )
 
 
 if __name__ == "__main__":
