@@ -2,8 +2,7 @@
 
 A Streamlit app that generates tiny, eerie mysteries using the [Mistral AI](https://mistral.ai/) API. Each mystery contains a strange detail, a hidden clue, and a reveal — all under 40 words.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://micromystery-generator.streamlit.app/)
-[![View on GitHub](https://img.shields.io/badge/View%20on-GitHub-181717?logo=github&style=flat-square)](https://github.com/gituserc1140/MicroMystery-Generator)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://micromystery-generator-duwle9dz2ys2emmqwjxsfb.streamlit.app/)
 [![Sponsor me on GitHub](https://img.shields.io/badge/Sponsor%20me%20on-GitHub-EA4AAA?logo=githubsponsors&style=flat-square)](https://github.com/sponsors/gituserc1140)
 
 ## About
